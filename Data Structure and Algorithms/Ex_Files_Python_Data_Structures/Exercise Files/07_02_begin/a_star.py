@@ -20,9 +20,27 @@ def heuristic(a, b):
 
 
 def a_star(maze, start, goal):
-    pass
-
-
+    pq=PriorityQueue()
+    pq.put(start,0)
+    predecessors={start:None}
+    Gvalues={start:0}
+    while not pq.is_empty():
+        current_cell=pq.get()
+        if current_cell==goal:
+            return get_path(predecessors, start,goal)
+        for direction in ['up','right','left','down']:
+            row_offset,column_offset=offsets[direction]
+            neighbour=(current_cell[0]+row_offset,current_cell[1]+column_offset)
+            if is_legal_pos(maze,neighbour) and neighbour not in Gvalues:#gvalues is undiscovered
+                new_cost=Gvalues[current_cell]+1
+                Gvalues[neighbour]=new_cost
+                Fvalue=heuristic(goal,neighbour)+new_cost
+                pq.put(neighbour,Fvalue)
+                predecessors[neighbour]=current_cell
+        
+    return None
+#__name__='__main__'
+#__name__==__'__main__'
 if __name__ == "__main__":
     # Test 1
     maze = [[0] * 3 for row in range(3)]
@@ -30,6 +48,7 @@ if __name__ == "__main__":
     goal_pos = (2, 2)
     result = a_star(maze, start_pos, goal_pos)
     assert result == [(0, 0), (0, 1), (0, 2), (1, 2), (2, 2)]
+    print(result)
 
     # Test 2
     maze = read_maze("mazes/mini_maze_bfs.txt")
@@ -41,7 +60,7 @@ if __name__ == "__main__":
     assert result == [(0, 0), (1, 0), (1, 1), (1, 2), (2, 2)]
 
     # Test 3
-    maze = read_maze("mini-maze-bfs.txt")
+    maze = read_maze("mazes/mini_maze_bfs.txt")
     start_pos = (0, 0)
     goal_pos = (3, 3)
     result = a_star(maze, start_pos, goal_pos)
