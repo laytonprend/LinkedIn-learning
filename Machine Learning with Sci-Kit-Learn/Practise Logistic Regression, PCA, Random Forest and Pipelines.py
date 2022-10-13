@@ -18,7 +18,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.datasets import load_wine
 from sklearn.preprocessing import StandardScaler
-
+#score
+from sklearn.metrics import accuracy_score
 #other
 import matplotlib.pyplot as plt
 import numpy as np
@@ -74,6 +75,7 @@ ax.set_ylabel('Principal Component 2', fontsize = 15)
 ax.set_title('2 Component PCA', fontsize = 20)    
 ax.legend(targets)
 ax.grid()
+plt.show()
 
 #explain variance
 print(pca.explained_variance_ratio_)
@@ -83,26 +85,27 @@ print(finalData.head())
 #now do KMeansclustering
 
 #TrainTestSplit
-X_train, X_test, y_train, y_test = train_test_split(data['Principal Component 1', 'Principal Component 2'], data['target'], random_state=0)
+x=finalData[['Principal Component 1', 'Principal Component 2']]
+X_train, X_test, y_train, y_test = train_test_split(x, finalData['target'], random_state=0)
 
 
 #data = load_wine()
 #wine = pd.DataFrame(data.data, columns=data.feature_names)
 print(finalData.head()) 
-X = finalData[['Principal Component 1', 'Principal Component 2']] 
+#X_train = finalData[['Principal Component 1', 'Principal Component 2']] 
 
 #scale = StandardScaler()
-#scale.fit(X)
-#X_scaled = scale.transform(X)
-#print('X\n',X)
-#print('X[0]\n',X[0])
+#scale.fit(X_train)
+#X_train_scaled = scale.transform(X_train)
+#print('X_train\n',X_train)
+#print('X_train[0]\n',X_train[0])
 from sklearn.cluster import KMeans
-kmeans = KMeans(n_clusters=3)
-kmeans.fit(X)
-y_pred = kmeans.predict(X)
+kmeans = KMeans(n_clusters=3,random_state=0)
+kmeans.fit(X_train)
+y_pred = kmeans.predict(X_test)
 
-plt.scatter(X['Principal Component 1'],#X[:,0], 
-            X['Principal Component 2'],
+plt.scatter(X_test['Principal Component 1'],#X_train[:,0], 
+            X_test['Principal Component 2'],
             c= y_pred)
 plt.scatter(kmeans.cluster_centers_[:, 0],
             kmeans.cluster_centers_[:, 1], 
@@ -122,9 +125,10 @@ for i in np.arange(1, 11):
     km = KMeans(
         n_clusters=i
     )
-    km.fit(X)
+    km.fit(X_train)
     inertia.append(km.inertia_)
-print(kmeans.score(y_test,y_pred))
+#print(y_test,y_pred)
+print(accuracy_score(y_test, y_pred))#75% accurate at grouping123b.
 # plot
 plt.plot(np.arange(1, 11), inertia, marker='o')
 plt.xlabel('Number of clusters')
@@ -134,8 +138,53 @@ plt.show()
 
 
 
-#so wine is a clustering already done, we do our clustering ignoring this but compare to after
+#accurate clustering,
+#now do logistic regression on whether == wine 2, lamda needed
+x=finalData[['Principal Component 1']]#, 'Principal Component 2']]
+finalData['target==1']=finalData.apply(lambda x: 1 if x.target==1 else 0,axis=1)
+#ReviewData.apply(lambda x: 1 if x.Health_Inspector_Data == True else 0, axis=1)
+X_train, X_test, y_train, y_test = train_test_split(x, finalData['target==1'], random_state=0)
+print('logistic regression\n',X_train.head())
+#restandardise
+'''scaler = StandardScaler()
 
+# Fit on training set only.
+scaler.fit(X_train)
+
+# Apply transform to both the training set and the test set.
+X_train = scaler.transform(X_train)
+X_test = scaler.transform(X_test)'''
+##x = data.loc[:, features].values
+#y = data.loc[:,['target']].values
+#x = StandardScaler().fit_transform(x)
+#scaler = StandardScaler()
+
+# Fit on training set only.
+#scaler.fit(X_train)
+
+# Apply transform to both the training set and the test set.
+
+X_train = StandardScaler().fit_transform(X_train)#scaler.transform(X_train)
+X_test = StandardScaler().fit_transform(X_test)#caler.transform(X_test)
+
+
+clf = LogisticRegression()
+clf.fit(X_train,y_train)
+print('prediction', clf.predict(X_test[0].reshape(1,-1))[0])
+print('probability', clf.predict_proba(X_test[0].reshape(1,-1)))
+
+Prediction=clf.predict(X_test)
+print('pred',Prediction)
+print(accuracy_score(y_test, Prediction))
+
+#try multilogistic regression, make function
+
+#example_df = pd.DataFrame()
+##print(X_test.columns)
+#print(X_test['Principal Component 1'])
+#example_df[ 'Principal Component 1'] = X_test['Principal Component 1'].values#reshape(-1)
+#example_df[ 'target'] = y_test.values
+#example_df['logistic_preds'] = pd.DataFrame(clf.predict_proba(X_test))[1]
 
 #X_train, X_test, y_train, y_test = train_test_split(data
 #data=StandardScaler.fit(data)
